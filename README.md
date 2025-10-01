@@ -1,86 +1,88 @@
-# Minimizing Entry into Homelessness
+# Reducing Entry Into Homelessness through ML-Informed Rental Assistance
 
-![dssg_logo](dssg_logo.png)
-
-Repository for DSSG 2022 Project to Reduce Entry Into Homelessness in Allegheny County.
-
-During the Data Science for Social Good Summer Fellowship 2022 at Carnegie Mellon University in Pittsburgh, the following team worked together with the Allegheny County Department of Human Services to reduce the risk of falling into homelessness:
-
-|   |   |
-|---|---|
-| [Joachim Baumann](https://github.com/joebaumann) | Fellow |
-| [Arun Frey](https://github.com/ArunFrey) | Fellow |
-| [Abby Smith](https://github.com/abbylsmith) | Fellow |
-| [Catalina Vajiac](https://github.com/catvajiac) | Fellow |
-| Kit Rodolfa | Data Science Mentor |
-| Kasun Amarasinghe | Data Science Mentor |
-| Adolfo de Unanue | Data Science Mentor |
-
-
-## Partner
-Allegheny County Department of Human Services (ACDHS)
-
-## Problem
-
-Each year, close to 14,000 individuals face an eviction in Allegheny County. Eviction is a known pathway into homelessness. Here is a map of evictions in Pittsburgh, with blue dots indicating those who fell into homelessness. 
-
-
-![eviction map](eviction_map.png)
-
-Allegheny County Department of Human Services (ACDHS) seeks to minimize the risk of entering into homelessness as a result of an eviction by providing tenants with rental assistance. Since Allegheny County is only able to provide rental assistance to around 1200 individuals each year, the county hopes to prioritize those individuals who are facing an eviction and are at greatest risk of falling into homelessness in the near future. The current process of allocating rental assistance is reactive, however, requiring individuals who are facing an eviction to reach out to ACDHS in order to be placed on a waitlist, from where funding is distributed on a first-come-first-served basis. This system does not prioritize individuals based on their risk of falling into homelessness, while also missing out on those who need urgenty help but fail to reach out. ACDHS hopes to make this process more proactive and prioritize those who face the greatest need. 
-
+Repository for a project to prioritize individuals currently facing eviction for rental assistance based on their predicted risk of future homelessness. This is an ongoing collaboration between Carnegie Mellon University (CMU) and the Allegheny County Department of Human Services (ACDHS). This work began as a project for the Data Science for Social Good Summer Fellowship 2022 at CMU in Pittsburgh (the final code from the DSSG fellowship is available here [[LINK]]).
 
 ## Data
-In this project, we partnered with Allegheny County Department of Human Services to better allocate rental assistance to high risk individuals in order to keep them from falling into homelessness. To do so, we used data from ACDHS’ rich data warehouse, including information on previous evictions, homeless spells, interactions with mental, behavioral, and physical health institutions, address changes, demographic information, as well as enrollment in a variety of other ACDHS and state programs, among others. Using historical data, we trained a series of models that predict an individual’s risk of entering homelessness in the next 12 months among all those with a recent eviction filing. Using these predictions, we can provide Allegheny County with a list of individuals who are currently facing an eviction and are at highest risk of falling into homelessness in the next 12 months. 
 
+We use data from ACDHS' rich data warehouse that includes individual-level information on previous evictions, homeless spells, interactions with mental, behavioral, and physical health services, address changes, demographic information, as well as enrollment in a variety of other ACDHS and state programs. We refresh the data from the warehouse on a weekly basis. This data is not publicly available; researchers interested in collaborating with ACDHS should contact them directly. 
 
-# Infrastructure 
+## Formulation of the Modeling Problem
 
-A general schematic of our pipeline infrastructure is shown below. 
+Using the historical data described above, we trained a series of models that predict an individual's risk of experiencing homelessness within 12 months of the prediction, among all those with a recent eviction filing. Using these predictions, every week we provide ACDHS with a list of individuals who are at highest risk of experiencing homelessness in the near future, among those currently facing eviction.
 
-![schematic](pipeline_schematic.png)
+### Cohort 
 
-# Installation and setup
+The cohort is individuals in Allegheny County
+1. who have had an eviction filing or a disposition in the four months prior to the prediction date
+2. are not currently homeless
+   
+We define "currently homeless" individuals to be anyone who has interacted with homelessness services (as defined below) in the four months prior to the prediction date.
 
-Clone repo:
+### Outcome Label 
+
+Individuals belong to the class of interest (`label=1`) if they interact with homelessness services at least once within 12 months of the prediction date. The relevant homelessness services include emergency shelters, street outreach programs, transitional housing, and other re-housing programs that are specified in the [homelessness table script](src/pipeline/pretriage/homelessness_table.sql). For each weekly list, we predict the top `k` individuals (`k` is based on intervention capacity) in terms of their risk of interacting with homelessness services within 12 months.
+
+### Alternate formulations
+
+We use the above cohort and label definitions in our experiments, but alternate formulations we have explored are documented in [`pipeline\configs\README.md`](src/pipeline/configs/README.md).
+
+## Methodology
+1. Define cohort based on problem formulation
+2. Define outcome label based on formulation
+4. Define training and validation sets over time 
+5. Define and generate predictors (see [feature config files](src/pipeline/configs/feature_groups/))
+6. Train Models on each training set and score all individuals in the corresponding validation set
+7. Evaluate all models for each validation time according to each metric (PPV at top k)
+8. Select "Best" model based on results over time
+9. Explore the high performing models to understand who they rank high, how they compare to the cohort, and important predictors
+10. Check and/or correct for bias issues
+
+## Repository Structure
+
+To build our predictive models, we use [Triage](https://github.com/dssg/triage), an open-sourced ML pipeline tool built and maintained by our team. Triage enables the modeling parameters to be set in a YAML configuration file, and the full configuration is defined in [ this YAML config file](https://github.com/dssg/acdhs_housing/blob/main/src/pipeline/configs/eviction_cohort_homelessness_risk.yaml)[[LINK]].
+
+* [Features](https://github.com/dssg/acdhs_housing/blob/main/src/pipeline/configs/eviction_cohort_homelessness_risk.yaml#L28)[[LINK]]
+* [Models](https://github.com/dssg/acdhs_housing/blob/main/src/pipeline/configs/eviction_cohort_homelessness_risk.yaml#L2292)[[LINK]]
+* [Label and cohort definition](https://github.com/dssg/acdhs_housing/blob/main/src/pipeline/configs/eviction_cohort_homelessness_risk.yaml#L22)[[LINK]] and corresponding [sql script](https://github.com/dssg/acdhs_housing/blob/main/src/pipeline/configs/labels/facing_eviction_homelessness.sql)[[LINK]]
+
+## Triage 
+We are using [Triage](https://github.com/dssg/triage) to build and select models. Some background and tutorials:
+
+* [Tutorial on Google Colab](https://colab.research.google.com/github/dssg/triage/blob/master/example/colab/colab_triage.ipynb): a quick tutorial hosted on Google Colab (no setup necessary) for users who are completely new to Triage
+* [Dirty Duck Tutorial](https://dssg.github.io/triage/dirtyduck/): a more in-depth walk-through of Triage's functionality and concepts using sample data
+* [QuickStart Guide](https://dssg.github.io/triage/quickstart/): try Triage on your own project and data
+* [Suggested workflow](https://dssg.github.io/triage/triage_project_workflow/)
+* [Understanding the configuration file](https://dssg.github.io/triage/experiments/experiment-config/#experiment-configuration)
+
+## How to run
+
+### Requirements
+
+- Triage is installed and the data is in a PostgreSQL database
+- Place the experiment config YAML in `src/pipeline/configs` folder
+- The database credentials and fed through environmental variables. The required environmental variables: 
+    - PGUSER (username for the db)
+    - PGHOST (database server)
+    - PGDATABASE (database name)
+    - PGROLE (shared database role, if any)
+    - PGPORT (relevant port of the database server)
+    - PGPASSWORD (password to authenticate access to the db server)
+    - PYTHONPATH (should be the path to the base folder)
+- These values could be set on the `.bashrc` or `.bash_profile` files in the users home folder, or could be loaded through a `.env` file (see `.env_sample`) placed in the base folder. That file needs to contain the above fields (format: `field=value`).
+- If a .env file is used, prior to running the pipeline, can load the variables using the following command
+
 ```
-gh repo clone dssg/acdhs_housing
-cd acdhs_housing
+ export $(xargs < .env)
 ```
 
+### Running the pipeline
 
-## Virtual environment
-
-Set up virtual environment and install requirements:
-```
-pip install -r requirements.txt
-```
-
-### Virtualenv: team set-up
-
-Need to do only once:
-
-1. To load the project-specific environment variables (such as python path), cd to your directory `/mnt/data/projects/acdhs-housing/[user]` (replace `[user]` with your username) and add the following two lines to your `.envrc` file:
+The pipeline is executed using the `run.py` script, which takes a config file (filename only, not full path; the file should be located in `src/pipeline/configs`) as a parameter. The following command can be used to execute the pipeline for the specified config. 
 
 ```
-source_up
-export PYTHONPATH="/mnt/data/projects/acdhs-housing/[user]/acdhs_housing"
+python run.py -c <config_filename> -n <number of jobs> 
 ```
 
-Without the above, there will be issues finding the correct path.
-
-2. Set `.env` following the example `.env.sample`
-
-
-## ETL
-
-[ETL instructions](src/etl/README.md)
-
-
-# Running the Model Pipelines
-
-[Here are the instructions to run the pipeline.](src/pipeline/README.md)
-
-# Postmodeling
-
-[Here are the instructions to do postmodeling.](src/pipeline/postmodeling/README.md)
+Other tips:
+- You can change the number of jobs across which you would like Triage to parallelize the process. If not provided, this runs a single threaded experiment (integer). 
+- A bash script placed in the base folder that loads the environmental variables and runs the pipeline could make the process easier.
