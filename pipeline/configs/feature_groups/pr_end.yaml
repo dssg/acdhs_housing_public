@@ -1,0 +1,27 @@
+prefix: 'pr_end'
+from_obj: | 
+  (
+    select 
+      client_id as entity_id,
+      program_end_dt,
+      program_duration
+    from pretriage.program_involvement_id
+  ) as state_programs
+
+knowledge_date_column: 'program_end_dt'
+
+intervals: ['all', '6month', '1 year', '3 year']
+
+aggregates_imputation:
+  all:
+    type: 'zero_noflag'
+    # value: -1
+
+aggregates:
+  -
+    quantity: program_duration
+    metrics:
+      - avg
+      - min
+      - max
+      - sum

@@ -1,0 +1,27 @@
+prefix: 'state_pr_end'
+from_obj: |
+  (
+    select 
+      client_id as entity_id,
+      event_duration,
+      elig_end_date
+    from pretriage.state_programs_consolidated_id
+  ) as state_programs
+
+knowledge_date_column: 'elig_end_date'
+
+intervals: ['all', '6month', '1 year', '3 year']
+
+aggregates_imputation:
+  all:
+    type: 'zero_noflag'
+    # value: -1
+
+aggregates:
+  -
+    quantity: event_duration
+    metrics:
+      - avg
+      - min
+      - max
+      - sum

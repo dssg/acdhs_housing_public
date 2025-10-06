@@ -1,0 +1,63 @@
+prefix: 'bh_type'
+from_obj: |
+  (
+    select 
+      client_id as entity_id,
+      event_type,
+      lag_bh_type,
+      event_beg_date
+    from pretriage.cmu_behavioral_health_prm_id
+  ) as bh
+
+knowledge_date_column: 'event_beg_date'
+
+intervals: ['all', '6month', '1 year', '3 year']
+
+aggregates_imputation:
+  all:
+    type: 'constant'
+    value: 100000
+
+aggregates:
+  - # time between bh events of a specific type
+    quantity:
+      lag_bh_rehab: case when event_type='SUD IP REHAB' then lag_bh_type end
+    metrics:
+      - avg
+      - min
+      - max
+  - # time between bh events of a specific type
+    quantity:
+      lag_bh_crisis: case when event_type='MH CRISIS' then lag_bh_type end
+    metrics:
+      - avg
+      - min
+      - max
+  - # time between bh events of a specific type
+    quantity:
+      lag_bh_detox: case when event_type='SUD IP DETOX' then lag_bh_type end
+    metrics:
+      - avg
+      - min
+      - max
+  - # time between bh events of a specific type
+    quantity:
+      lag_bh_emerg: case when event_type='MH EMERGENCY' then lag_bh_type end
+    metrics:
+      - avg
+      - min
+      - max
+  - # time between bh events of a specific type
+    quantity:
+      lag_bh_assess: case when event_type='SUD ASSESSMENT' then lag_bh_type end
+    metrics:
+      - avg
+      - min
+      - max
+  - # time between bh events of a specific type
+    quantity:
+      lag_bh_inpatient: case when event_type='MH INPATIENT' then lag_bh_type end
+    metrics:
+      - avg
+      - min
+      - max

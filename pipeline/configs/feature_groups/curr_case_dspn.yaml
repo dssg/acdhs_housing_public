@@ -1,0 +1,105 @@
+prefix: 'curr_case_dspn'
+
+from_obj: |
+  (select 
+    *,
+    case 
+      when judgement_for_tenant then 'yes' 
+      when not judgement_for_tenant then 'no'
+      else 'unk' 
+    end as tenant_win,
+    case 
+      when judgement_for_landlord then 'yes' 
+      when not judgement_for_landlord then 'no'
+      else 'unk' 
+    end as ll_win,
+    case 
+      when settled then 'yes' 
+      when not settled then 'no'
+      else 'unk' 
+    end as issettled,
+    case 
+      when withdrawn then 'yes' 
+      when not withdrawn then 'no'
+      else 'unk' 
+    end as iswithdrawn,
+    case 
+      when dismissed then 'yes' 
+      when not dismissed then 'no'
+      else 'unk' 
+    end as isdismissed
+  from pretriage.most_recent_eviction_dspndt) as sq
+
+knowledge_date_column: 'knowledge_date'
+
+intervals: ['all']
+
+categoricals_imputation:
+  all:
+    type: 'null_category'
+
+aggregates:
+  - 
+    quantity: days_since_judgment
+    metrics:
+      - min
+    imputation:
+      all:
+        type: constant
+        value: 9999 
+
+categoricals:
+  - 
+    column: tenant_win
+      
+    choices:
+      - 'yes'
+      - 'no'
+      - 'unk'
+
+    metrics:
+      - max
+
+  - 
+    column: ll_win
+
+    choices:
+      - 'yes'
+      - 'no'
+      - 'unk'
+
+    metrics:
+      - max
+
+  - 
+    column: issettled
+
+    choices:
+      - 'yes'
+      - 'no'
+      - 'unk'
+
+    metrics:
+      - max
+
+  - 
+    column: iswithdrawn
+
+    choices:
+      - 'yes'
+      - 'no'
+      - 'unk'
+
+    metrics:
+      - max
+
+  - 
+    column: isdismissed
+
+    choices:
+      - 'yes'
+      - 'no'
+      - 'unk'
+
+    metrics:
+      - max

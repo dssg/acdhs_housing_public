@@ -1,0 +1,30 @@
+prefix: 'hl'
+from_obj: | 
+  (
+    select 
+      client_id as entity_id,
+      program_start_dt,
+      program_end_dt
+    from pretriage.homelessness_id
+  ) as dhl     
+
+knowledge_date_column: 'program_start_dt'
+
+intervals: ['all', '6month', '1 year', '3 year']
+
+aggregates_imputation:
+  all:
+    type: 'zero_noflag'
+    # value: -1 # TODO IMPUTE what if program_end_dt null, then days_hl null but it probably shouldn't be 0?
+
+aggregates:
+  - # how many periods of homelessness 
+    quantity: distinct program_start_dt # TODO this counts overlapping periods separately, is that what we want? (see id=121)
+    metrics:
+      - count
+
+  - # flag 1 if condition is current 
+    quantity: 
+      current_flag: case when '{collate_date}'::DATE < program_end_dt::DATE then 1 else 0 end 
+    metrics:
+      - max

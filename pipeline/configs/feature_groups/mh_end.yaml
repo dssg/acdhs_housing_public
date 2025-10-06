@@ -1,0 +1,27 @@
+prefix: 'mh_end'
+from_obj: |
+  (
+    select 
+      client_id as entity_id,
+      event_duration,
+      event_end_date
+    from pretriage.cmu_mh_prm_id
+  ) as mh
+
+knowledge_date_column: 'event_end_date'
+
+# intervals: ['all', '3month', '6month', '1 year', '2year', '3 year', '4year', '5year'] 
+intervals: ['all', '6month', '1 year', '3 year'] 
+
+aggregates_imputation:
+  all:
+    type: 'zero_noflag'
+
+aggregates:
+  - # duration of mental health event
+    quantity: event_duration
+    metrics:
+      - avg
+      - min
+      - max
+      - sum

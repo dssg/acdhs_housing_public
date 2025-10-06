@@ -1,0 +1,24 @@
+prefix: 'ofp'
+from_obj: | 
+  (
+    select 
+      client_id as entity_id,
+      ofp_issue_dt,
+      matter_id
+    from pretriage.eviction_client_matches_id
+  ) as ev
+
+knowledge_date_column: 'ofp_issue_dt'
+
+intervals: ['all', '1 year']
+
+aggregates_imputation:
+  all:
+    type: 'zero_noflag'
+    # value: -1
+
+aggregates:
+  - 
+    quantity: distinct matter_id
+    metrics: 
+      - count

@@ -1,0 +1,30 @@
+prefix: 'phys_end'
+# TODO same client+claim number has multiple svc_cat_grp_nbr, are we counting correctly?
+from_obj: |
+  (
+    select 
+      client_id as entity_id,
+      svc_end_dt_new,
+      svc_start_dt,
+      svc_end_dt
+    from pretriage.cmu_physical_health_prm_id
+  ) as ph
+
+knowledge_date_column: 'svc_end_dt_new'
+
+intervals: ['all', '6month', '1 year', '3 year']
+
+aggregates_imputation:
+  all:
+    type: 'zero_noflag'
+    # value: -1
+
+aggregates:
+  - # duration of ph events
+    quantity:
+      ph_duration: svc_end_dt - svc_start_dt + 1
+    metrics:
+      - avg
+      - min
+      - max
+      - sum

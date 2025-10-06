@@ -1,0 +1,27 @@
+prefix: 'ra_app_elig'
+from_obj: |
+  (
+    select 
+      client_id as entity_id, 
+      eligibility_status_id as elig_status,
+      elig_detrmn_dt
+    from pretriage.rental_assistance_application_id
+  ) as raa
+
+knowledge_date_column: 'elig_detrmn_dt'
+
+intervals: ['3months', '6months', '1year', 'all'] 
+
+categoricals:
+  - 
+    column: elig_status
+    # choice_query: select distinct eligibility_status_id as elig_status from pretriage.rental_assistance_application_id;
+    choices:
+      - 1
+      - 2
+      - 3
+    metrics:
+      - sum
+    imputation:
+      all:
+        type: 'null_category'

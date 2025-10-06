@@ -1,0 +1,44 @@
+prefix: 'ra_app'
+from_obj: |
+  (
+    select 
+      client_id as entity_id, 
+      submitted_dt,
+      referral_method_desc as ref
+    from pretriage.rental_assistance_application_id
+  ) as raa
+
+knowledge_date_column: 'submitted_dt'
+
+intervals: ['3months', '6months', '1year', 'all'] 
+
+aggregates_imputation:
+  all:
+    type: 'zero_noflag'
+
+aggregates:
+  - 
+    quantity: distinct submitted_dt
+    metrics:
+      - count
+  
+categoricals:
+  - 
+    column: ref
+    # choice_query: select distinct referral_method_desc as ref from pretriage.rental_assistance_application_id;
+    
+    choices:
+      - 'Healthy Start'
+      - 'Link'
+      - 'Housing Stability Centers'
+      - 'FEPP'
+      - 'Courts'
+      - 'Community Partners'
+      - 'ERAP'
+    
+    metrics:
+      - sum
+      
+    imputation:
+      all:
+        type: 'null_category'

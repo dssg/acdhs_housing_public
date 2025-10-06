@@ -1,0 +1,37 @@
+prefix: 'address'
+from_obj: | 
+  (
+    select 
+      client_id as entity_id,
+      address_line_1,
+      zip_cd,
+      lower(city) as city,
+      eff_date
+    from pretriage.address_feed_id
+  ) as addr
+
+knowledge_date_column: 'eff_date'
+
+intervals: ['all', '6month', '1 year', '3 year']
+
+aggregates_imputation:
+  all:
+    type: 'mean'
+
+aggregates:
+  - # number of unique addresses
+    quantity:
+      uniq_add: distinct address_line_1 
+    metrics:
+      - count
+  - # number of unique zip codes
+    quantity:
+      unique_zip: distinct zip_cd
+    metrics:
+      - count
+
+  - 
+    quantity:
+      unique_city: distinct city
+    metrics:
+      - count

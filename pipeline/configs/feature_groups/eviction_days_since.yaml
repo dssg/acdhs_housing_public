@@ -1,0 +1,35 @@
+prefix: 'eviction_days_since'
+from_obj: |
+  (select 
+    client_id as entity_id, 
+    filingdt
+  from pretriage.eviction_client_matches_id) as ev
+
+knowledge_date_column: 'filingdt'
+
+intervals: ['all']
+
+# aggregates_imputation:
+#   all:
+#     type: 'constant'
+#     value: -1
+
+aggregates:
+  -
+    quantity: 
+      days_since_eviction: ('{collate_date}'::DATE - filingdt::DATE)
+    metrics:
+      - min 
+    imputation:
+      all:
+        type: 'constant'
+        value: 9999
+  - 
+    quantity: 
+      days_since_eviction_log: log('{collate_date}'::DATE - filingdt::DATE)
+    metrics:
+      - min 
+    imputation:
+      all:
+        type: 'constant'
+        value: 9999

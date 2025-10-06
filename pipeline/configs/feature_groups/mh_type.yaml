@@ -1,0 +1,63 @@
+prefix: 'mh_type'
+from_obj: |
+  (
+    select 
+      client_id as entity_id,
+      lag_mh_type,
+      event_start_date,
+      event_type
+    from pretriage.cmu_mh_prm_id
+  ) as mh
+
+knowledge_date_column: 'event_start_date'
+
+intervals: ['all', '6month', '1 year', '3 year']
+
+aggregates_imputation:
+  all:
+    type: 'constant'
+    value: 9999 # assume a big gap when missing
+
+aggregates:
+  - # time between mh events of a specific type
+    quantity:
+      lag_mh_mobile: case when event_type='MH CRISIS MOBILE' then lag_mh_type end
+    metrics:
+      - avg
+      - min
+      - max
+  - # time between mh events of a specific type
+    quantity:
+      lag_mh_resid: case when event_type='MH CRISIS RESIDENTIAL' then lag_mh_type end
+    metrics:
+      - avg
+      - min
+      - max
+  - # time between mh events of a specific type
+    quantity:
+      lag_mh_phone: case when event_type='MH CRISIS TELEPHONE' then lag_mh_type end
+    metrics:
+      - avg
+      - min
+      - max
+  - # time between mh events of a specific type
+    quantity:
+      lag_mh_walkin: case when event_type='MH CRISIS WALK-IN' then lag_mh_type end
+    metrics:
+      - avg
+      - min
+      - max
+  - # time between mh events of a specific type
+    quantity:
+      lag_mh_emerg: case when event_type='MH EMERGENCY' then lag_mh_type end
+    metrics:
+      - avg
+      - min
+      - max
+  - # time between mh events of a specific type
+    quantity:
+      lag_mh_inpatient: case when event_type='MH INPATIENT' then lag_mh_type end
+    metrics:
+      - avg
+      - min
+      - max

@@ -1,0 +1,184 @@
+prefix: 'court'
+
+from_obj: |
+  (
+    select 
+      entity_id,
+        mre.districtcourtno,
+        mre.knowledge_date as as_of_date,
+        mre.filingdt,
+        ea.agg_knowledge_date::date,
+        case_count,
+        ofp_rate,
+        ll_win_rate,
+        ll_loss_rate,
+        settle_rate
+      from pretriage.most_recent_eviction mre left join pretriage.eviction_aggregates_at_districtcourtno_level ea 
+      on mre.districtcourtno = ea.districtcourtno::int 
+      and ea.agg_knowledge_date < mre.knowledge_date
+  ) as c
+
+knowledge_date_column: 'filingdt'
+
+intervals: ['all']
+
+aggregates_imputation:
+  all:
+    type: zero_noflag
+
+aggregates:
+  - # number of cases filed per month in the court of the current case
+    quantity: 
+      case_count_3m: "case
+        when as_of_date = '{collate_date}'::date 
+        and agg_knowledge_date > '{collate_date}'::date - '6month'::interval
+        and agg_knowledge_date < '{collate_date}'::date
+        then case_count    
+        end   
+        "
+    metrics:
+      - sum
+      - max
+      - min
+      - avg 
+  - 
+    quantity: 
+      case_count_1y: "case
+        when as_of_date = '{collate_date}'::date 
+        and agg_knowledge_date > '{collate_date}'::date - '1year'::interval
+        and agg_knowledge_date < '{collate_date}'::date
+        then case_count     
+        end  
+        "
+    metrics:
+      - sum
+      - max
+      - min
+      - avg 
+
+  - 
+    quantity: 
+      case_count_all: "case
+        when as_of_date = '{collate_date}'::date 
+        and agg_knowledge_date < '{collate_date}'::date
+        then case_count      
+        end 
+        "
+    metrics:
+      - sum
+      - max
+      - min
+      - avg 
+
+  - # OFP rate in the city (monthly)
+    # TODO - There's some leakage here for the OFP. 
+    # not considering the ofp date as the knowledge date. Fix it!
+    quantity: 
+      ofp_rate_3m: "case
+        when as_of_date = '{collate_date}'::date 
+        and agg_knowledge_date > '{collate_date}'::date - '3month'::interval
+        and agg_knowledge_date < '{collate_date}'::date
+        then ofp_rate   
+        end    
+        "
+    metrics:
+      - sum
+      - max
+      - min
+      - avg 
+
+  - # OFP rate in the city (monthly)
+    quantity: 
+      ofp_rate_1y: "case
+        when as_of_date = '{collate_date}'::date 
+        and agg_knowledge_date > '{collate_date}'::date - '1year'::interval
+        and agg_knowledge_date < '{collate_date}'::date
+        then ofp_rate    
+        end   
+        "
+    metrics:
+      - sum
+      - max
+      - min
+      - avg 
+  - # OFP rate in the city (monthly)
+    quantity: 
+      ofp_rate_all: "case
+        when as_of_date = '{collate_date}'::date 
+        and agg_knowledge_date < '{collate_date}'::date
+        then ofp_rate   
+        end    
+        "
+    metrics:
+      - sum
+      - max
+      - min
+      - avg 
+
+### Not adding the case outcomes rates yet (landlord win rate, loss rate, settle rate)
+
+# Here we consider the label prevelance at city level. Have to split it into another fg as the knowledge date is different
+prefix: 'court_hl'
+
+from_obj: |
+  (
+    select 
+      entity_id,
+        mre.districtcourtno,
+        mre.knowledge_date as as_of_date,
+        mre.filingdt,
+        ea.label_knowledge_date::date,
+        label_rate
+      from pretriage.most_recent_eviction mre left join pretriage.eviction_aggregates_at_districtcourtno_level ea 
+      on mre.districtcourtno = ea.districtcourtno::int 
+      and ea.label_knowledge_date < mre.knowledge_date
+  ) as c
+
+knowledge_date_column: 'filingdt'
+
+intervals: ['all']
+
+aggregates:
+  - # Label rate in the cases filed in the city in the last XX months
+    quantity: 
+      label_rate_3m: "case
+        when as_of_date = '{collate_date}'::date 
+        and label_knowledge_date > '{collate_date}'::date - '3month'::interval
+        and label_knowledge_date < '{collate_date}'::date
+        then label_rate 
+        end      
+        "
+    metrics:
+      - sum
+      - max
+      - min
+      - avg 
+  
+  - # Label rate in the cases filed in the city in the last XX months
+    quantity: 
+      label_rate_1y: "case
+        when as_of_date = '{collate_date}'::date 
+        and label_knowledge_date > '{collate_date}'::date - '1year'::interval
+        and label_knowledge_date < '{collate_date}'::date
+        then label_rate 
+        end   
+        "
+    metrics:
+      - sum
+      - max
+      - min
+      - avg 
+
+  - # Label rate in the cases filed in the city in the last XX months
+    quantity: 
+      label_rate_all: "case
+        when as_of_date = '{collate_date}'::date 
+        and label_knowledge_date < '{collate_date}'::date
+        then label_rate   
+        end    
+        "
+    metrics:
+      - sum
+      - max
+      - min
+      - avg 

@@ -1,0 +1,95 @@
+prefix: 'bh_days_since_dx'
+from_obj: |
+  (
+    select 
+      client_id as entity_id,
+      diagnosis_category_code,
+      event_end_date
+    from pretriage.cmu_behavioral_health_prm_id
+  ) as bh
+
+knowledge_date_column: 'event_end_date'
+
+intervals: ['all']
+
+aggregates_imputation:
+  all:
+    type: 'constant'
+    value: 9999
+
+aggregates:
+  - # time since bh event_end_date
+    quantity:
+      days_since_bh_F99: case when diagnosis_category_code='F99' then ('{collate_date}'::DATE - event_end_date::DATE) end
+    metrics:
+      - min
+  - # time since bh event_end_date
+    quantity:
+      days_since_bh_304: case when diagnosis_category_code='304' then ('{collate_date}'::DATE - event_end_date::DATE) end
+    metrics:
+      - min
+  - # time since bh event_end_date
+    quantity:
+      days_since_bh_F11: case when diagnosis_category_code='F11' then ('{collate_date}'::DATE - event_end_date::DATE) end
+    metrics:
+      - min
+  - # time since bh event_end_date
+    quantity:
+      days_since_bh_296: case when diagnosis_category_code='296' then ('{collate_date}'::DATE - event_end_date::DATE) end
+    metrics:
+      - min
+  - # time since bh event_end_date
+    quantity:
+      days_since_bh_311: case when diagnosis_category_code='311' then ('{collate_date}'::DATE - event_end_date::DATE) end
+    metrics:
+      - min
+  - # time since bh event_end_date
+    quantity:
+      days_since_bh_F10: case when diagnosis_category_code='F10' then ('{collate_date}'::DATE - event_end_date::DATE) end
+    metrics:
+      - min
+  - # time since bh event_end_date
+    quantity:
+      days_since_bh_F32: case when diagnosis_category_code='F32' then ('{collate_date}'::DATE - event_end_date::DATE) end
+    metrics:
+      - min
+  - # time since bh event_end_date
+    quantity:
+      days_since_bh_303: case when diagnosis_category_code='303' then ('{collate_date}'::DATE - event_end_date::DATE) end
+    metrics:
+      - min
+  - # time since bh event_end_date
+    quantity:
+      days_since_bh_295: case when diagnosis_category_code='295' then ('{collate_date}'::DATE - event_end_date::DATE) end
+    metrics:
+      - min
+  - # time since bh event_end_date
+    quantity:
+      days_since_bh_F12: case when diagnosis_category_code='F12' then ('{collate_date}'::DATE - event_end_date::DATE) end
+    metrics:
+      - min
+  - # time since bh event_end_date
+    quantity:
+      days_since_bh_F31: case when diagnosis_category_code='F31' then ('{collate_date}'::DATE - event_end_date::DATE) end
+    metrics:
+      - min
+  - # time since bh event_end_date
+    quantity:
+      days_since_bh_F33: case when diagnosis_category_code='F33' then ('{collate_date}'::DATE - event_end_date::DATE) end
+    metrics:
+      - min
+  - # time since bh event_end_date
+    quantity:
+      days_since_bh_F41: case when diagnosis_category_code='F41' then ('{collate_date}'::DATE - event_end_date::DATE) end
+    metrics:
+      - min
+  - # time since bh event_end_date
+    quantity:
+      days_since_bh_F25: case when diagnosis_category_code='F25' then ('{collate_date}'::DATE - event_end_date::DATE) end
+    metrics:
+      - min
+  - # time since bh event_end_date
+    quantity:
+      days_since_bh_F60: case when diagnosis_category_code='F60' then ('{collate_date}'::DATE - event_end_date::DATE) end
+    metrics:
+      - min

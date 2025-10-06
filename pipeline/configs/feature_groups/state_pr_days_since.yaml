@@ -1,0 +1,29 @@
+prefix: 'state_pr_days_since'
+from_obj: | 
+  (
+    select 
+      client_id as entity_id,
+      elig_begin_date
+    from pretriage.state_programs_consolidated_id
+  ) as state_programs
+
+knowledge_date_column: 'elig_begin_date'
+
+intervals: ['all']
+
+aggregates_imputation:
+  all:
+    type: 'constant'
+    value: 9999
+
+aggregates:
+  -
+    quantity:
+      days_since_elig_begin: ('{collate_date}'::DATE - elig_begin_date::DATE)
+    metrics:
+      - min
+  -
+    quantity:
+      days_since_elig_begin_log: log('{collate_date}'::DATE - elig_begin_date::DATE)
+    metrics:
+      - min

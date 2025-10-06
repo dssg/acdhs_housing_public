@@ -1,0 +1,26 @@
+prefix: 'link_ce_days_since'
+from_obj: |
+  (
+    select 
+      client_id as entity_id, 
+      referral_date
+    from pretriage.link_coordinated_entry_id
+  ) as lce
+
+knowledge_date_column: 'referral_date'
+
+intervals: ['all'] 
+
+aggregates:
+  -
+    quantity:
+      days_since_referral: ('{collate_date}'::DATE - referral_date::DATE)
+    metrics:
+      - min
+      - max
+    imputation:
+      all:
+        type: 'constant'
+        value: 9999
+
+      
