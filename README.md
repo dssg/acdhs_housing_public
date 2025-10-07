@@ -39,10 +39,10 @@ We use the above cohort and label definitions in our experiments, but alternate 
 
 ## Repository Structure
 
-To build our predictive models, we use [Triage](https://github.com/dssg/triage), an open-sourced ML pipeline tool built and maintained by our team. Triage enables the modeling parameters to be set in a YAML configuration file, and the full configuration is defined in [ this YAML config file](pipeline/configs/labels/facing_eviction_homelessness.sql).
+To build our predictive models, we use [Triage](https://github.com/dssg/triage), an open-sourced ML pipeline tool built and maintained by our team. Triage enables the modeling parameters to be set in a YAML configuration file, and the full configuration is defined in [this YAML config file](pipeline/configs/configs/base_config.yaml) (feature definitions are defined separately).
 
 * [Features](pipeline/configs/feature_groups/)
-* [Models](pipeline/configs/train_models_for_trial.yaml)
+* [Models](pipeline/configs/base_config.yaml#L33)
 * [Label and cohort definition](pipeline/configs/labels/facing_eviction_homelessness.sql)
 
 ## Triage 
