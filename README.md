@@ -86,3 +86,18 @@ python run.py -c <config_filename> -n <number of jobs>
 Other tips:
 - You can change the number of jobs across which you would like Triage to parallelize the process. If not provided, this runs a single threaded experiment (integer). 
 - A bash script placed in the base folder that loads the environmental variables and runs the pipeline could make the process easier.
+
+### Project Team
+- Alice Lai
+- Kasun Amarasinghe
+- Rayid Ghani
+
+Data Science for Social Good Fellowship Team (2022):
+- Joachim Baumann, DSSG Fellow
+- Arun Frey, DSSG Fellow
+- Abigail Smith, DSSG Fellow
+- Catalina Vajiac, DSSG Fellow
+- Kit Rodolfa, DSSG Mentor
+- Adolfo De Unanue, DSSG Mentor
+- Kasun Amarasinghe, DSSG Mentor
+
