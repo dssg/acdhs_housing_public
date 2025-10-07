@@ -1,0 +1,23 @@
+prefix: 'link_contacts_days_since'
+from_obj: |
+  (
+    select 
+      client_id as entity_id, 
+      contact_date
+    from pretriage.link_contacts_id
+  ) as lc
+
+knowledge_date_column: 'contact_date'
+
+intervals: ['all'] 
+
+aggregates:
+  -
+    quantity:
+      days_since_contact: ('{collate_date}'::DATE - contact_date::DATE)
+    metrics:
+      - min
+    imputation:
+      all:
+        type: 'constant'
+        value: 9999

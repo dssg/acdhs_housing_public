@@ -1,0 +1,50 @@
+prefix: 'bh_days_since_type'
+from_obj: |
+  (
+    select 
+      client_id as entity_id,
+      event_type,
+      event_end_date
+    from pretriage.cmu_behavioral_health_prm_id
+  ) as bh
+
+knowledge_date_column: 'event_end_date'
+
+intervals: ['all']
+
+aggregates_imputation:
+  all:
+    type: 'constant'
+    value: 9999
+
+aggregates:
+  - # time since bh event_end_date
+    quantity:
+      days_since_bh_rehab: case when event_type='SUD IP REHAB' then ('{collate_date}'::DATE - event_end_date::DATE) end
+    metrics:
+      - min
+  - # time since bh event_end_date
+    quantity:
+      days_since_bh_crisis: case when event_type='MH CRISIS' then ('{collate_date}'::DATE - event_end_date::DATE) end
+    metrics:
+      - min
+  - # time since bh event_end_date
+    quantity:
+      days_since_bh_detox: case when event_type='SUD IP DETOX' then ('{collate_date}'::DATE - event_end_date::DATE) end
+    metrics:
+      - min
+  - # time since bh event_end_date
+    quantity:
+      days_since_bh_emerg: case when event_type='MH EMERGENCY' then ('{collate_date}'::DATE - event_end_date::DATE) end
+    metrics:
+      - min
+  - # time since bh event_end_date
+    quantity:
+      days_since_bh_assess: case when event_type='SUD ASSESSMENT' then ('{collate_date}'::DATE - event_end_date::DATE) end
+    metrics:
+      - min
+  - # time since bh event_end_date
+    quantity:
+      days_since_bh_inpatient: case when event_type='MH INPATIENT' then ('{collate_date}'::DATE - event_end_date::DATE) end
+    metrics:
+      - min

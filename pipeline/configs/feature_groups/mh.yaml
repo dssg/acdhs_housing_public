@@ -1,0 +1,59 @@
+prefix: 'mh'
+from_obj: |
+  (
+    select 
+      client_id as entity_id,
+      lag_mh,
+      event_start_date,
+      event_end_date,
+      event_type
+    from pretriage.cmu_mh_prm_id
+  ) as mh
+
+knowledge_date_column: 'event_start_date'
+
+intervals: ['all', '6month', '1 year', '3 year']
+
+aggregates_imputation:
+  all:
+    type: 'zero_noflag'
+
+aggregates:
+  - # number of mental health events
+    quantity: entity_id 
+    metrics:
+      - count
+  - # time between mental health events
+    quantity: lag_mh
+    metrics:
+      - avg
+      - min
+      - max
+    imputation:
+      all:
+        type: 'constant'
+        value: 9999
+  - # flag 1 if condition is current 
+    quantity: 
+      current_flag: case when '{collate_date}'::DATE < event_end_date::DATE then 1 else 0 end 
+    metrics:
+      - max
+
+categoricals_imputation:
+  all:
+    type: 'null_category'
+
+categoricals:
+  - 
+    column: event_type
+    # choice_query: select distinct event_type from pretriage.cmu_mh_prm_id;
+    choices:
+      - 'MH CRISIS MOBILE'     
+      - 'MH CRISIS RESIDENTIAL'
+      - 'MH CRISIS TELEPHONE'  
+      - 'MH CRISIS WALK-IN'    
+      - 'MH EMERGENCY'         
+      - 'MH INPATIENT'         
+    
+    metrics:
+      - sum

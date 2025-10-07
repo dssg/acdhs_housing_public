@@ -1,0 +1,29 @@
+prefix: 'dspn_days_since'
+from_obj: |
+  (
+    select
+      client_id as entity_id,
+      dispositiondt
+    from pretriage.eviction_client_matches_id
+  ) as ev
+
+knowledge_date_column: 'dispositiondt'
+
+intervals: ['all'] 
+
+aggregates_imputation:
+  all:
+    type: 'constant'
+    value: 9999
+
+aggregates:
+  - 
+    quantity:
+      days_since_judgment: ('{collate_date}'::DATE - dispositiondt::DATE)
+    metrics:
+      - min 
+  - 
+    quantity:
+      days_since_judgment_log: log('{collate_date}'::DATE - dispositiondt::DATE)
+    metrics:
+      - min 

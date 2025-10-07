@@ -1,0 +1,46 @@
+prefix: 'ra'
+from_obj: |
+  (
+    select 
+      client_id as entity_id,
+      crrp_app_id as app, 
+      paymnt_dt,
+      late_fees,
+      rent_amount as rent, 
+      paymnt_amt,
+      month_id,
+      rent_month_desc || ' ' || rent_year as month
+    from pretriage.rental_assistance_id
+  ) as ra
+
+knowledge_date_column: 'paymnt_dt'
+
+intervals: ['6months', '1year', 'all'] 
+
+aggregates_imputation:
+  all:
+    type: zero_noflag
+
+aggregates:
+  - # Number of distinct applications
+    quantity: distinct app
+    metrics:
+      - count
+
+  - # Total rental assistance money received
+    quantity: paymnt_amt
+    metrics:
+      - sum
+
+  - # Number of months where money received
+    quantity: distinct month
+    metrics:
+      - count
+
+  - # Rent associated with past applications
+    quantity: rent
+    metrics:
+      - avg
+      - max
+      - min
+

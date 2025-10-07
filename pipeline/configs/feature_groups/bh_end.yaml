@@ -1,0 +1,27 @@
+prefix: 'bh_end'
+from_obj: |
+  (
+    select 
+      client_id as entity_id,
+      event_duration,
+      event_end_date
+    from pretriage.cmu_behavioral_health_prm_id
+  ) as bh
+
+knowledge_date_column: 'event_end_date'
+
+intervals: ['all', '6month', '1 year', '3 year']
+
+aggregates_imputation:
+  all:
+    type: 'constant'
+    value: 0
+
+aggregates:
+  - # duration of bh event
+    quantity: event_duration
+    metrics:
+      - avg
+      - min
+      - max
+      - sum

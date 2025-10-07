@@ -1,0 +1,23 @@
+prefix: 'ph_movein'
+from_obj: |
+  (
+    select 
+      client_id as entity_id,
+      moveindate
+    from pretriage.public_housing_id
+  ) as phin
+
+knowledge_date_column: 'moveindate'
+
+intervals: ['all', '6month', '1 year', '3 year']
+
+aggregates_imputation:
+  all:
+    type: 'zero_noflag'
+    # value: -1
+
+aggregates:
+  - # count of stays in public housing
+    quantity: distinct moveindate
+    metrics:
+      - count

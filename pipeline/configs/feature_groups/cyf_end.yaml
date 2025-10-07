@@ -1,0 +1,31 @@
+prefix: 'cyf_end'
+from_obj: | 
+  (
+    select distinct on (plcmnt_seq_nbr,  
+      client_id)
+      client_id as entity_id, 
+      plcmnt_entry_date, 
+      plcmnt_end_date, 
+      plcmnt_seq_nbr
+    from pretriage.cmu_placement_prm_id
+  ) as cyf
+
+knowledge_date_column: 'plcmnt_end_date'
+
+intervals: ['all']
+
+aggregates_imputation:
+  all:
+    type: 'zero_noflag' # assume no placements
+
+aggregates:
+  - # duration of cyf
+    quantity: 
+      cyf_duration: abs(plcmnt_end_date - plcmnt_entry_date) + 1 # TODO do we do data validation e.g. plcmnt_end_date is after plcmnt_entry_date - there are a handful of negative numbers
+    metrics:
+      - avg
+      - sum
+      - min
+      - max
+
+      

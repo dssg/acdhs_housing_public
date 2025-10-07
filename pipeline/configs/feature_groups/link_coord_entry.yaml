@@ -1,0 +1,44 @@
+prefix: 'link_ce'
+from_obj: |
+  (
+    select 
+      client_id as entity_id, 
+      referral_date,
+      referral_id,
+      ce_assessment_type as ce
+    from pretriage.link_coordinated_entry_id
+  ) as lce
+
+knowledge_date_column: 'referral_date'
+
+intervals: ['3months', '6months', '1year', 'all'] 
+
+aggregates:
+  -
+    quantity: distinct referral_date
+    metrics:
+      - count
+    imputation:
+      all:
+        type: zero_noflag
+
+categoricals:
+  - 
+    column: ce
+    # choice_query: select distinct ce_assessment_type as ce from pretriage.link_coordinated_entry_id;
+    choices:
+      - 'HOUSING'
+      - 'CRISIS'
+      - 'DIVERSION - Yes'
+      - 'DIVERSION - No'
+      - 'Referral to Prevention Program'
+
+    metrics:
+      - sum
+      
+    imputation:
+      all:
+        type: 'null_category'
+
+
+      

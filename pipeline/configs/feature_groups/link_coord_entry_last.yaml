@@ -1,0 +1,25 @@
+prefix: 'link_ce_last'
+from_obj: |
+  (
+    select 
+      client_id as entity_id, 
+      last_contact_dt,
+      referral_id
+    from pretriage.link_coordinated_entry_id
+  ) as lce
+
+knowledge_date_column: 'last_contact_dt'
+
+intervals: ['all'] 
+
+aggregates:
+  -
+    quantity:
+      days_since_last_contact: ('{collate_date}'::DATE - last_contact_dt::DATE)
+    metrics:
+      - min
+      - max
+    imputation:
+      all:
+        type: 'constant'
+        value: 9999

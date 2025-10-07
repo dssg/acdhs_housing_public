@@ -1,0 +1,70 @@
+prefix: 'demo'
+from_obj: |
+  (
+    with clients as 
+    (
+      select distinct on (client_hash)
+      *
+      from clean.client_feed
+    )
+    select 
+      greatest(dob, '2011-01-01'::date) as knowledge_date, 
+      dob,
+      client_id as entity_id,
+      gender,
+      race 
+    from clients c join pretriage.client_id_mapping cid using(client_hash)
+  ) as demo
+
+knowledge_date_column: knowledge_date
+
+intervals: ['all']
+
+# aggregates_imputation:
+#   all:
+#     type: mean
+
+aggregates:
+  - # age of person in years
+    quantity:
+      age: extract('year' from age('{collate_date}'::date, dob))
+    metrics:
+      - max
+    imputation:
+      all:
+        type: constant
+        value: 150 
+
+categoricals_imputation:
+  all:
+    type: 'null_category'
+
+categoricals:
+  - # gender
+    column: gender
+    choices:
+      - '2~Female'
+      - '99~Unknown'
+      - '1~Male'
+    # choice_query: select distinct gender from clean.client_feed; 
+    metrics:
+      - max
+  # - # sex
+  #   column: legal_sex
+  #   choice_query: select distinct legal_sex from clean.client_feed; 
+  #   metrics:
+      # - max
+  - # race
+    column: race
+    choices:
+      - 'Native Hawaiian/Pacific Islander'
+      - 'American Indian/Alaskan Native'
+      - 'Two or More Races'
+      - 'Asian'
+      - 'White'
+      - 'Black/African American'
+      - 'Other Single Race'
+
+    # choice_query: select distinct race from clean.client_feed;
+    metrics:
+      - max

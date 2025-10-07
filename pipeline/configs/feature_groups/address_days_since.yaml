@@ -1,0 +1,34 @@
+prefix: 'address_days_since'
+from_obj: | 
+  (
+    select 
+      client_id as entity_id,
+      eff_date
+    from pretriage.address_feed_id
+  ) as addr
+
+knowledge_date_column: 'eff_date'
+
+intervals: ['all'] 
+
+aggregates_imputation:
+  min:
+    type: 'constant'
+    value: 9999 
+  max:
+    type: 'constant'
+    value: 0
+
+aggregates:
+  - # days since eff_date
+    quantity: 
+      days_since_eff: ('{collate_date}'::DATE - eff_date::DATE)
+    metrics: 
+      - min
+      - max
+      
+  - # log days since eff_date
+    quantity:
+      days_since_eff_log: log('{collate_date}'::DATE - eff_date::DATE)
+    metrics: 
+      - min

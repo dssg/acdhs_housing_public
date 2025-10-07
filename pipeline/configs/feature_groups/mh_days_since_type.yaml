@@ -1,0 +1,55 @@
+prefix: 'mh_days_since_type'
+from_obj: |
+  (
+    select 
+      client_id as entity_id,
+      event_end_date,
+      event_type
+    from pretriage.cmu_mh_prm_id
+  ) as mh
+
+knowledge_date_column: 'event_end_date'
+
+intervals: ['all']
+
+aggregates_imputation:
+  all:
+    type: 'constant'
+    value: 9999
+
+aggregates:
+  - # time since mh event_end_date
+    quantity: 
+      days_since_mh_mobile: case when event_type='MH CRISIS MOBILE' then ('{collate_date}'::DATE - event_end_date::DATE) end
+    metrics:
+      - min
+  
+  - # time since mh event_end_date
+    quantity: 
+      days_since_mh_resident: case when event_type='MH CRISIS RESIDENTIAL' then ('{collate_date}'::DATE - event_end_date::DATE) end
+    metrics:
+      - min
+  
+  - # time since mh event_end_date
+    quantity: 
+      days_since_mh_phone: case when event_type='MH CRISIS TELEPHONE' then ('{collate_date}'::DATE - event_end_date::DATE) end
+    metrics:
+      - min
+  
+  - # time since mh event_end_date
+    quantity: 
+      days_since_mh_walkin: case when event_type='MH CRISIS WALK-IN' then ('{collate_date}'::DATE - event_end_date::DATE) end
+    metrics:
+      - min
+
+  - # time since mh event_end_date
+    quantity: 
+      days_since_mh_emerg: case when event_type='MH EMERGENCY' then ('{collate_date}'::DATE - event_end_date::DATE) end
+    metrics:
+      - min
+
+  - # time since mh event_end_date
+    quantity: 
+      days_since_mh_inpatient: case when event_type='MH INPATIENT' then ('{collate_date}'::DATE - event_end_date::DATE) end
+    metrics:
+      - min

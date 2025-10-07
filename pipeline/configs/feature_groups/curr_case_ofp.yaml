@@ -1,0 +1,37 @@
+prefix: 'curr_case_ofp'
+
+from_obj: |
+  (select 
+    *,
+    case when order_for_possession then 'yes' 
+    when not order_for_possession then 'no'
+    else 'unk' end as issued
+  from pretriage.most_recent_eviction_ofpdt) as sq
+
+knowledge_date_column: 'knowledge_date'
+
+intervals: ['all']
+
+categoricals_imputation:
+  all:
+    type: 'null_category'
+
+aggregates:
+  - 
+    quantity: days_since_ofp
+    metrics:
+      - min 
+    imputation:
+      min:
+        type: constant
+        value: 9999 
+
+categoricals:
+  - 
+    column: issued 
+    choices:
+      - 'yes'
+      - 'no'
+      - 'unk' 
+    metrics:
+      - max

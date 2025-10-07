@@ -1,0 +1,170 @@
+prefix: 'bh'
+from_obj: |
+  (
+    select 
+      client_id as entity_id,
+      event_type,
+      diagnosis_category_code,
+      lag_bh,
+      event_beg_date,
+      event_end_date
+    from pretriage.cmu_behavioral_health_prm_id
+  ) as bh
+
+knowledge_date_column: 'event_beg_date'
+
+intervals: ['all', '6month', '1 year', '3 year']
+
+aggregates_imputation:
+  all:
+    type: 'mean' # redundant?
+
+aggregates:
+  - # number of behavioral health events
+    quantity: entity_id 
+    metrics: 
+      - count
+    imputation:
+      all:
+        type: zero_noflag
+  - # time between bh events
+    quantity: lag_bh
+    metrics:
+      - avg
+      - min
+      - max
+    imputation:
+      all:
+        type: constant
+        value: 100000
+  - # flag 1 if condition is current 
+    # TODO - This feature should be removed. at least separated into a different group
+    quantity: 
+      current_flag: case when '{collate_date}'::DATE < event_end_date::DATE then 1 else 0 end 
+    metrics:
+      - max
+
+categoricals_imputation:
+  all:
+    type: 'null_category'
+
+categoricals:
+  - 
+    column: event_type
+    # choice_query: select distinct event_type from pretriage.cmu_behavioral_health_prm_id;
+    choices:
+      - 'SUD CLINICAL OUTP'
+      - 'MH EMERGENCY'     
+      - 'SUD IP DETOX'     
+      - 'SUD ASSESSMENT'   
+      - 'MH INPATIENT'     
+      - 'SUD IP REHAB'     
+      - 'MH CRISIS'  
+    metrics:
+      - sum
+  - 
+    column: diagnosis_category_code
+    # choice_query: select distinct diagnosis_category_code from pretriage.cmu_behavioral_health_prm_id;
+    choices:
+      - 'F24'
+      - 'F95'
+      - 'F93'
+      - '299'
+      - 'F19'
+      - 'F07'
+      - '314'
+      - 'F04'
+      - 'F39'
+      - 'F79'
+      - 'F70'
+      - 'F69'
+      - 'F84'
+      - '317'
+      - '301'
+      - 'F40'
+      - 'F14'
+      - 'F90'
+      - 'F78'
+      - 'F06'
+      - 'F21'
+      - '302'
+      - 'F02'
+      - 'F44'
+      - 'F23'
+      - '294'
+      - 'F25'
+      - 'F48'
+      - '307'
+      - 'F28'
+      - '305'
+      - 'F12'
+      - 'F42'
+      - 'F52'
+      - '300'
+      - '312'
+      - '315'
+      - 'F18'
+      - '313'
+      - 'F88'
+      - 'F55'
+      - 'F54'
+      - 'F98'
+      - 'F89'
+      - 'F65'
+      - 'F63'
+      - 'F10'
+      - '310'
+      - '309'
+      - 'F45'
+      - 'F32'
+      - 'F99'
+      - 'F60'
+      - 'F03'
+      - 'F73'
+      - 'F43'
+      - 'F68'
+      - '293'
+      - 'F09'
+      - '295'
+      - 'F22'
+      - 'F34'
+      - 'F13'
+      - 'F05'
+      - 'F51'
+      - '291'
+      - '303'
+      - 'F33'
+      - 'F11'
+      - 'F31'
+      - '311'
+      - 'V40'
+      - 'F81'
+      - 'F15'
+      - 'F01'
+      - '308'
+      - 'F30'
+      - 'F64'
+      - '304'
+      - '316'
+      - '306'
+      - 'F20'
+      - '296'
+      - 'F71'
+      - 'F17'
+      - '290'
+      - '318'
+      - 'F80'
+      - '292'
+      - 'F53'
+      - 'F72'
+      - '298'
+      - 'F41'
+      - '297'
+      - 'F16'
+      - 'F91'
+      - 'F29'
+      - '319'
+      - 'F94'
+      - 'F50'
+    metrics:
+      - sum

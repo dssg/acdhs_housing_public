@@ -1,0 +1,31 @@
+prefix: 'age_if' # TODO DATA there are wrong DOB years in client_feed that result in negative values for curr_age
+from_obj: |
+  (
+    select
+      client_id as entity_id, 
+      curr_age, 
+      program_start_dt 
+    from pretriage.program_involvement_consolidated_id
+  ) as ageif
+# TODO i've created two different versions of the program_involvement_consolidated tables, unify them
+
+knowledge_date_column: 'program_start_dt'
+
+intervals: ['all']
+
+aggregates_imputation:
+  all:
+    type: 'constant'
+    value: 150
+
+aggregates:
+  - # age at time of first involvement
+    quantity: curr_age
+    metrics:
+      - min
+  - # age at time of first involvement as adult (18 and up)
+    quantity: 
+      adult_age_if: case when curr_age >= 18 then curr_age else null end # TODO IMPUTE is this 150 value the correct interpretation? it turns out to be "150 but not imputed," should we change that? 
+      #make a separate query that ONLY contains those with adult age involvement? K - moved to null to force imputation
+    metrics:
+      - min

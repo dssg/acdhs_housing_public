@@ -1,0 +1,126 @@
+prefix: 'bh_dx'
+from_obj: |
+  (
+    select 
+      client_id as entity_id,
+      diagnosis_category_code,
+      lag_bh_diagnosis,
+      event_beg_date
+    from pretriage.cmu_behavioral_health_prm_id
+  ) as bh
+
+knowledge_date_column: 'event_beg_date'
+
+intervals: ['all', '6month', '1 year', '3 year']
+
+aggregates_imputation:
+  all:
+    type: 'constant'
+    value: 100000 # large number since if there are no diagnoses, the date gap should be longer
+
+aggregates:
+  - # time between bh events of a specific diagnosis code
+    quantity:
+      lag_bh_F99: case when diagnosis_category_code='F99' then lag_bh_diagnosis end
+    metrics:
+      - avg
+      - min
+      - max
+  - # time between bh events of a specific diagnosis code
+    quantity:
+      lag_bh_304: case when diagnosis_category_code='304' then lag_bh_diagnosis end
+    metrics:
+      - avg
+      - min
+      - max
+  - # time between bh events of a specific diagnosis code
+    quantity:
+      lag_bh_F11: case when diagnosis_category_code='F11' then lag_bh_diagnosis end
+    metrics:
+      - avg
+      - min
+      - max
+  - # time between bh events of a specific diagnosis code
+    quantity:
+      lag_bh_296: case when diagnosis_category_code='296' then lag_bh_diagnosis end
+    metrics:
+      - avg
+      - min
+      - max
+  - # time between bh events of a specific diagnosis code
+    quantity:
+      lag_bh_311: case when diagnosis_category_code='311' then lag_bh_diagnosis end
+    metrics:
+      - avg
+      - min
+      - max
+  - # time between bh events of a specific diagnosis code
+    quantity:
+      lag_bh_F10: case when diagnosis_category_code='F10' then lag_bh_diagnosis end
+    metrics:
+      - avg
+      - min
+      - max
+  - # time between bh events of a specific diagnosis code
+    quantity:
+      lag_bh_F32: case when diagnosis_category_code='F32' then lag_bh_diagnosis end
+    metrics:
+      - avg
+      - min
+      - max
+  - # time between bh events of a specific diagnosis code
+    quantity:
+      lag_bh_303: case when diagnosis_category_code='303' then lag_bh_diagnosis end
+    metrics:
+      - avg
+      - min
+      - max
+  - # time between bh events of a specific diagnosis code
+    quantity:
+      lag_bh_295: case when diagnosis_category_code='295' then lag_bh_diagnosis end
+    metrics:
+      - avg
+      - min
+      - max
+  - # time between bh events of a specific diagnosis code
+    quantity:
+      lag_bh_F12: case when diagnosis_category_code='F12' then lag_bh_diagnosis end
+    metrics:
+      - avg
+      - min
+      - max
+  - # time between bh events of a specific diagnosis code
+    quantity:
+      lag_bh_F31: case when diagnosis_category_code='F31' then lag_bh_diagnosis end
+    metrics:
+      - avg
+      - min
+      - max
+  - # time between bh events of a specific diagnosis code
+    quantity:
+      lag_bh_F33: case when diagnosis_category_code='F33' then lag_bh_diagnosis end
+    metrics:
+      - avg
+      - min
+      - max
+  - # time between bh events of a specific diagnosis code
+    quantity:
+      lag_bh_F41: case when diagnosis_category_code='F41' then lag_bh_diagnosis end
+    metrics:
+      - avg
+      - min
+      - max
+  - # time between bh events of a specific diagnosis code
+    quantity:
+      lag_bh_F25: case when diagnosis_category_code='F25' then lag_bh_diagnosis end
+    metrics:
+      - avg
+      - min
+      - max
+  - # time between bh events of a specific diagnosis code
+    quantity:
+      lag_bh_F60: case when diagnosis_category_code='F60' then lag_bh_diagnosis end
+    metrics:
+      - avg
+      - min
+      - max

@@ -1,0 +1,37 @@
+prefix: 'ph_in_days_since'
+from_obj: |
+  (
+    select 
+      client_id as entity_id,
+      moveindate
+    from pretriage.public_housing_id
+  ) as phin
+
+knowledge_date_column: 'moveindate'
+
+intervals: ['all'] 
+
+# aggregates_imputation:
+#   all:
+#     type: 'constant'
+#     value: -1
+
+aggregates:
+  - # days since start of public housing
+    quantity: 
+      days_since_phin: ('{collate_date}'::DATE - moveindate::DATE)
+    metrics:
+      - min 
+    imputation:
+      all:
+        type: 'constant'
+        value: 9999
+  - # log days since start of public housing
+    quantity: 
+      days_since_phin_log: log('{collate_date}'::DATE - moveindate::DATE)
+    metrics:
+      - min 
+    imputation:
+      all:
+        type: 'constant'
+        value: 9999

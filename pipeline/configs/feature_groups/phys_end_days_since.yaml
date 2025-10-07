@@ -1,0 +1,29 @@
+prefix: 'phys_end_days_since'
+from_obj: |
+  (
+    select 
+      client_id as entity_id,
+      svc_end_dt_new
+    from pretriage.cmu_physical_health_prm_id
+  ) as ph
+
+knowledge_date_column: 'svc_end_dt_new'
+
+intervals: ['all']
+
+aggregates_imputation:
+  all:
+    type: 'constant'
+    value: 9999
+
+aggregates:
+  - # days since ph event end date
+    quantity:
+      days_since: ('{collate_date}'::DATE - svc_end_dt_new::DATE)
+    metrics:
+      - min
+  - # log days since ph event end date
+    quantity:
+      days_since_log: log('{collate_date}'::DATE - svc_end_dt_new::DATE)
+    metrics:
+      - min

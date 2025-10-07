@@ -1,0 +1,37 @@
+prefix: 'eviction_cases'
+from_obj: | 
+  (select 
+    client_id as entity_id, 
+    filingdt,
+    matter_id,
+    claimamount,
+    monthlyrentamount
+  from pretriage.eviction_client_matches_id) as ev
+
+knowledge_date_column: 'filingdt'
+
+intervals: ['all', '6month', '1 year', '3 year']
+
+aggregates_imputation:
+  all:
+    type: 'zero_noflag' # assume no cases if missing
+  
+aggregates:
+  -
+    quantity: matter_id
+    metrics:
+      - 'count'
+  - 
+    quantity: claimamount
+    metrics:
+      - sum
+      - avg
+      - min
+      - max
+  - 
+    quantity: monthlyrentamount
+    metrics:
+      - sum
+      - avg
+      - min
+      - max

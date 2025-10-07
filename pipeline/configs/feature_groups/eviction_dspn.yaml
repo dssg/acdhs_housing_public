@@ -1,0 +1,38 @@
+prefix: 'eviction_dspn'
+from_obj: |
+  (
+    select
+      client_id as entity_id,
+      dispositiondt,
+      judgement_for_tenant,
+      judgement_for_landlord,
+      totaljudgmentamount
+    from pretriage.eviction_client_matches_id
+  ) as ev
+
+knowledge_date_column: 'dispositiondt'
+
+intervals: ['all', '6month', '1 year', '3 year']
+
+aggregates_imputation:
+  all:
+    type: 'zero_noflag'
+
+aggregates:
+  - 
+    quantity:
+      tenant_won: judgement_for_tenant::INT
+    metrics:
+      - sum
+  -
+    quantity:
+      landlord_win: judgement_for_landlord::INT
+    metrics:
+      - sum
+  - 
+    quantity: totaljudgmentamount
+    metrics:
+      - sum
+      - avg
+      - min
+      - max

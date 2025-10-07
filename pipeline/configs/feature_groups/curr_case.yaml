@@ -1,0 +1,217 @@
+prefix: 'curr_case'
+    
+from_obj: | 
+  (select
+    *,
+    case when tenanthasrepresentation then 'yes' 
+    when not tenanthasrepresentation then 'no'
+    else 'unk' end as tenant_rep,
+    case when landlordhasrepresentation then 'yes' 
+    when not landlordhasrepresentation then 'no'
+    else 'unk' end as ll_rep, 
+    case when city_of_pgh_flag then 'yes' 
+    when not city_of_pgh_flag then 'no'
+    else 'unk' end as is_pgh,
+    case when is_ha=1 then 'yes' 
+    when not is_ha=0 then 'no'
+    else 'unk' end as ll_ha
+  from pretriage.most_recent_eviction) as sq
+
+knowledge_date_column: 'knowledge_date'
+
+intervals: ['all']
+
+aggregates_imputation:
+  all:
+    type: 'mean'
+
+aggregates:
+  - 
+    quantity: days_since_filing
+    metrics:
+      - min
+    imputation:
+      min:
+        type: constant
+        value: 9999 
+  - 
+    quantity: claimamount
+    metrics:
+      - max
+  - 
+    quantity: monthlyrentamount
+    metrics:
+      - max
+
+categoricals_imputation:
+  all:
+    type: 'null_category'
+
+categoricals:
+  - 
+    column: tenant_rep
+  
+    choices:
+      - 'yes'
+      - 'no'
+      - 'unk'
+  
+    metrics:
+      - max
+  - 
+    column: ll_rep
+
+    choices:
+      - 'yes'
+      - 'no'
+      - 'unk'
+
+    metrics:
+      - max
+  - 
+    column: is_pgh
+
+    choices:
+      - 'yes'
+      - 'no'
+      - 'unk'
+
+    metrics:
+      - max
+  - 
+    column: ll_ha
+
+    choices:
+      - 'yes'
+      - 'no'
+      - 'unk'
+
+    metrics:
+      - max  
+
+  - # We are only capturing the 10 most frequent zip codes
+    column: 'zip_cd'
+    
+    # choice_query: |
+    #   SELECT DISTINCT zip_cd FROM (
+    #       SELECT zip_cd, count(*) as count
+    #       from pretriage.most_recent_eviction
+    #       group by zip_cd
+    #       order by count(*) desc
+    #       limit 10
+    #   ) as z
+    
+    choices:
+      - '15132'
+      - '15136'
+      - '15206'
+      - '15210'
+      - '15212'
+      - '15219'
+      - '15221'
+      - '15227'
+      - '15235'
+      - '15236'
+
+
+    metrics:
+      - max
+  
+  - # Most frequently appearing city using 20 as our city names are not clean
+    column: 'city'
+
+    # choice_query: |
+    #   SELECT DISTINCT city FROM (
+    #     SELECT city, count(*) as count
+    #     from pretriage.most_recent_eviction
+    #     group by city
+    #     order by count(*) desc
+    #     limit 20
+    #   ) as c
+
+    choices:
+      - 'Braddock'
+      - 'Carnegie'
+      - 'Clairton'
+      - 'Coraopolis'
+      - 'Duquesne'
+      - 'East Pittsburgh'
+      - 'McKeesport'
+      - 'McKees Rocks'
+      - 'Monroeville'
+      - 'Munhall'
+      - 'North Versailles'
+      - 'Penn Hills'
+      - 'Pgh'
+      - 'Pittsburgh'
+      - 'Rankin'
+      - 'Swissvale'
+      - 'Turtle Creek'
+      - 'Verona'
+      - 'West Mifflin'
+      - 'Wilkinsburg'
+
+
+    metrics:
+      - max
+
+  - 
+    column: 'districtcourtno'
+
+    # choice_query: |
+    #   SELECT DISTINCT court FROM (
+    #     SELECT districtcourtno::varchar as court, count(*) as count
+    #     from pretriage.most_recent_eviction
+    #     group by districtcourtno
+    #     order by count(*) desc
+    #     limit 30
+    #   ) as d
+
+    choices:
+      - '5201'
+      - '5202'
+      - '5203'
+      - '5205'
+      - '5206'
+      - '5207'
+      - '5208'
+      - '5210'
+      - '5211'
+      - '5213'
+      - '5214'
+      - '5215'
+      - '5217'
+      - '5218'
+      - '5219'
+      - '5223'
+      - '5225'
+      - '5227'
+      - '5228'
+      - '5231'
+      - '5236'
+      - '5238'
+      - '5240'
+      - '5242'
+      - '5247'
+      - '5306'
+      - '5309'
+      - '5312'
+      - '5313'
+      - '5314'
+
+
+    metrics:
+      - max
+
+  - 
+    column: 'landlord_category'
+
+    # choice_query: |
+    #   SELECT DISTINCT landlord_category from pretriage.most_recent_eviction
+    choices:
+      - 'Organization'
+      - 'Attorney'
+      - 'Person'
+
+    metrics:
+      - max

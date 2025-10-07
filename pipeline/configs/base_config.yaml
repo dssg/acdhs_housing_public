@@ -1,0 +1,266 @@
+# CONFIG VERSION
+config_version: 'v8'
+
+# EXPERIMENT METADATA
+# model_comment: 'e4mhl1y_w_excl_202504'
+model_comment: 'small_cohort'
+random_seed: 42
+
+user_metadata:
+  comment: 'triage_hash_test_v2'
+
+# T
+temporal_config:
+    feature_start_time: '2017-01-01' 
+    feature_end_time: '2025-01-01' 
+    label_start_time: '2017-01-01' 
+    label_end_time: '2025-01-01' 
+    model_update_frequency: '4month' 
+    training_as_of_date_frequencies: '4month' 
+    test_as_of_date_frequencies: '3month' 
+    max_training_histories: '5year' 
+    test_durations: '0day' 
+    training_label_timespans: ['12month'] 
+    test_label_timespans: ['12month'] 
+
+# COHORT AND LABEL GENERATION
+label_config:
+  filepath: 'src/pipeline/configs/labels/facing_eviction_homelessness.sql'
+  # name: 'e4mhl1y_w_excl' 
+  name: 'small_cohort_v2'
+
+# MODEL GRID PRESETS
+grid_config:
+
+  'sklearn.ensemble.RandomForestClassifier':
+    criterion: ['gini']
+    max_depth: [50] 
+    n_jobs: [-1]
+    max_features: ['sqrt']
+    n_estimators: [10000]
+    min_samples_leaf: [25] 
+    min_samples_split: [25] 
+    n_jobs: [-1]
+
+  'lightgbm.LGBMClassifier':
+    max_depth: [10]
+    num_leaves: [31]
+    n_estimators: [300]
+    boosting_type: ['dart']
+
+  'xgboost.XGBClassifier':
+    booster: ['dart']
+    tree_method: ["hist"]
+    max_depth: [10]
+    nthread: [44]
+    n_jobs: [-1]
+    eval_metric: ["logloss"]
+    
+  'triage.component.catwalk.estimators.classifiers.ScaledLogisticRegression':
+    penalty: ['l2']
+    C: [0.01] 
+    max_iter: [500]
+    solver: ['saga']
+  
+  'sklearn.dummy.DummyClassifier':
+    strategy: ['prior']
+
+  'sklearn.tree.DecisionTreeClassifier':
+    max_depth: [3]
+    min_samples_split: [100] 
+    criterion: ['gini']
+
+  'triage.component.catwalk.baselines.rankers.BaselineRankMultiFeature':
+    rules:
+      - [{feature: 'ofp_days_since_entity_id_all_days_since_ofp_min', low_value_high_score: True}] # days since most recent OFP issue date, should be precision@100=0.02
+      - [{feature: 'ofp_days_since_entity_id_all_days_since_ofp_min', low_value_high_score: False}] # Mimicing FCFS by ranking by oldest OFP in the cohort
+      - [{feature: 'hl_days_since_entity_id_all_days_since_hl_min', low_value_high_score: True}] # number of days since start of last homeless period, should be precision@100= 0.07 to 0.18
+      - [{feature: 'hl_end_entity_id_all_days_hl_sum', low_value_high_score: False}] # Number of days spent hl in all data
+      - [{feature: 'pr_days_since_entity_id_all_days_since_pr_start_min', low_value_high_score: True}] # number of days since program start date
+      - [{feature: 'pr1_entity_id_all_dpt_count', low_value_high_score: False}] # number of involvements with programs
+      - [{feature: 'pr1_entity_id_all_uniq_programs_count', low_value_high_score: False}] # number of distinct programs involved with
+      - [{feature: 'age_if_entity_id_all_curr_age_min', low_value_high_score: True}] # age at first program involvement
+      - [{feature: 'age_if_entity_id_all_adult_age_if_min', low_value_high_score: True}] # adult age at first program involvement
+
+
+# MODEL SCORING
+scoring:
+    testing_metric_groups:
+        -
+          metrics: [precision@, recall@]
+          thresholds:
+            percentiles: [1, 2, 3, 4, 5, 6, 7, 8, 9, 
+                      10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+                      20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 
+                      30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 
+                      40, 41, 42, 43, 44, 45, 46, 47, 48, 49,
+                      50, 51, 52, 53, 54, 55, 56, 57, 58, 59,
+                      60, 61, 62, 63, 64, 65, 66, 67, 68, 69,
+                      70, 71, 72, 73, 74, 75, 76, 77, 78, 79,
+                      80, 81, 82, 83, 84, 85, 86, 87, 88, 89,
+                      90, 91, 92, 93, 94, 95, 96, 97, 98, 99,
+                      100]
+            top_n: [25, 50, 100, 500, 1000, 2000]
+        -
+          metrics: [roc_auc]
+
+    training_metric_groups:
+      -
+          metrics: [precision@, recall@]
+          thresholds:
+            percentiles: [1, 2, 3, 4, 5, 6, 7, 8, 9, 
+                      10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+                      20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 
+                      30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 
+                      40, 41, 42, 43, 44, 45, 46, 47, 48, 49,
+                      50, 51, 52, 53, 54, 55, 56, 57, 58, 59,
+                      60, 61, 62, 63, 64, 65, 66, 67, 68, 69,
+                      70, 71, 72, 73, 74, 75, 76, 77, 78, 79,
+                      80, 81, 82, 83, 84, 85, 86, 87, 88, 89,
+                      90, 91, 92, 93, 94, 95, 96, 97, 98, 99,
+                      100]
+            top_n: [25, 50, 100, 500, 1000, 2000]
+    
+    priority_metric: 'precision@'
+    priority_parameter: '100_abs'
+    
+    subsets:
+      - # Indiviuals who have experienced homelessness in the past
+        name: prev_hl
+        query: |
+          select distinct client_id as entity_id
+          from pretriage.homelessness_id
+          where program_start_dt < '{as_of_date}'::date
+  
+      - # who have never been homeless before. This is to capture first time homelessness
+        name: not_prev_hl
+        query: |
+          select 
+              e.client_id as entity_id
+          from pretriage.eviction_client_matches_id e left join pretriage.homelessness_id hi 
+          on e.client_id=hi.client_id 
+          and hi.program_start_dt < '{as_of_date}'::date
+          where e.filingdt < '{as_of_date}'::date  
+          group by 1
+          having not(bool_or(hi.program_start_dt is not null))
+      
+      - # Individuals who are facing eviction only on the basis of rent arrears (that we know of)        
+        name: known_arrears_only
+        query: |
+          select
+              distinct client_id as entity_id
+          from pretriage.eviction_client_matches_id e
+          where e.dispositiondt < '{as_of_date}'::date
+          and grantpossessionjudgmentnotsat
+
+      - 
+        name: eviction_filed_1wk
+        query: |
+          select
+              distinct client_id as entity_id
+          from pretriage.eviction_client_matches_id ecm left join clean.eviction e 
+          on ecm.matter_id = e.matter_id
+          where e.filingdt >= '{as_of_date}'::date - interval '1 week'
+          and e.filingdt < '{as_of_date}'::date
+      - 
+        name: eviction_filed_2wk
+        query: |
+          select
+              distinct client_id as entity_id
+          from pretriage.eviction_client_matches_id ecm left join clean.eviction e 
+          on ecm.matter_id = e.matter_id
+          where e.filingdt >= '{as_of_date}'::date - interval '2 week'
+          and e.filingdt < '{as_of_date}'::date
+      - 
+        name: eviction_filed_1mo
+        query: |
+          select
+              distinct client_id as entity_id
+          from pretriage.eviction_client_matches_id ecm left join clean.eviction e 
+          on ecm.matter_id = e.matter_id
+          where e.filingdt >= '{as_of_date}'::date - interval '1 month'
+          and e.filingdt < '{as_of_date}'::date
+      - 
+        name: dspn_1wk
+        query: |
+          select
+              distinct client_id as entity_id
+          from pretriage.eviction_client_matches_id ecm left join clean.eviction e 
+          on ecm.matter_id = e.matter_id
+          where e.dispositiondt >= '{as_of_date}'::date - interval '1 week'
+          and e.dispositiondt < '{as_of_date}'::date
+      - 
+        name: dspn_2wk
+        query: |
+          select
+              distinct client_id as entity_id
+          from pretriage.eviction_client_matches_id ecm left join clean.eviction e 
+          on ecm.matter_id = e.matter_id
+          where e.dispositiondt >= '{as_of_date}'::date - interval '2 week'
+          and e.dispositiondt < '{as_of_date}'::date
+      - 
+        name: dspn_1mo
+        query: |
+          select
+              distinct client_id as entity_id
+          from pretriage.eviction_client_matches_id ecm left join clean.eviction e 
+          on ecm.matter_id = e.matter_id
+          where e.dispositiondt >= '{as_of_date}'::date - interval '1 month'
+          and e.dispositiondt < '{as_of_date}'::date
+      - 
+        name: ofp_1wk
+        query: |
+          select
+              distinct client_id as entity_id
+          from pretriage.eviction_client_matches_id ecm left join clean.eviction e 
+          on ecm.matter_id = e.matter_id
+          where e.ofp_issue_dt >= '{as_of_date}'::date - interval '1 week'
+          and e.ofp_issue_dt < '{as_of_date}'::date
+      - 
+        name: ofp_2wk
+        query: |
+          select
+              distinct client_id as entity_id
+          from pretriage.eviction_client_matches_id ecm left join clean.eviction e 
+          on ecm.matter_id = e.matter_id
+          where e.ofp_issue_dt >= '{as_of_date}'::date - interval '2 week'
+          and e.ofp_issue_dt < '{as_of_date}'::date
+      - 
+        name: ofp_1mo
+        query: |
+          select
+              distinct client_id as entity_id
+          from pretriage.eviction_client_matches_id ecm left join clean.eviction e 
+          on ecm.matter_id = e.matter_id
+          where e.ofp_issue_dt >= '{as_of_date}'::date - interval '1 month'
+          and e.ofp_issue_dt < '{as_of_date}'::date
+
+bias_audit_config:
+  from_obj_table: |
+    (
+        with clients as 
+        (
+          select distinct on (client_hash)
+          *
+          from clean.client_feed
+        )
+        select 
+          dob,
+          greatest(dob, '2011-01-01'::date) as knowledge_date,
+          client_id as entity_id,
+          gender,
+          race 
+        from clients c join pretriage.client_id_mapping cid using(client_hash)
+    ) as demo
+  attribute_columns: [race, gender]
+  knowledge_date_column: knowledge_date
+  entity_id_column: entity_id
+  ref_groups_method: predefined
+  ref_groups: 
+    gender: '1~Male'
+    race: 'White'
+  thresholds:
+    percentiles: [1,5,10,15,20,25,50,100]
+    top_n: [50, 100, 150, 200, 500, 1000]
+  
+  priority_metric: 'tpr_disparity'

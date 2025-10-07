@@ -1,0 +1,29 @@
+prefix: 'mh_days_since'
+from_obj: |
+  (
+    select 
+      client_id as entity_id,
+      event_end_date
+    from pretriage.cmu_mh_prm_id
+  ) as mh
+
+knowledge_date_column: 'event_end_date'
+
+intervals: ['all']
+
+aggregates_imputation:
+  all:
+    type: 'constant'
+    value: 9999
+
+aggregates:
+  - # time since mh event_end_date
+    quantity: 
+      days_since_mh: ('{collate_date}'::DATE - event_end_date::DATE)
+    metrics:
+      - min 
+  - # time since mh event_end_date
+    quantity: 
+      days_since_mh_log: log('{collate_date}'::DATE - event_end_date::DATE)
+    metrics:
+      - min 

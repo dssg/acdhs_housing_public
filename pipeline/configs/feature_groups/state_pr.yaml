@@ -1,0 +1,93 @@
+prefix: 'state_pr'
+from_obj: |
+  (
+    select 
+      client_id as entity_id,
+      elig_end_date,
+      elig_begin_date,
+      category
+    from pretriage.state_programs_consolidated_id
+  ) as state_programs
+
+knowledge_date_column: 'elig_begin_date'
+
+intervals: ['all', '6month', '1 year', '3 year'] 
+
+aggregates_imputation:
+  all:
+    type: 'zero_noflag'
+    # value: -1
+
+aggregates:
+  - # count number of involvements with state programs
+    quantity: category 
+    metrics:
+      - count
+  - # count number of involvements with unique state programs
+    quantity:
+      uniq_programs: distinct category
+    metrics:
+      - count
+  - # flag 1 if condition is current 
+    quantity: 
+      current_flag: case when '{collate_date}'::DATE < elig_end_date::DATE then 1 else 0 end 
+    metrics:
+      - max
+
+categoricals_imputation:
+  all:
+    type: 'null_category'
+
+categoricals:
+  - # count number of involvements for each state program
+    column: category
+    # choice_query: select distinct category from pretriage.state_programs_consolidated_id;
+    choices:
+      - 'A'
+      - 'ACX'
+      - 'B'
+      - 'C'
+      - 'CHP'
+      - 'D'
+      - 'E'
+      - 'EIX'
+      - 'FS'
+      - 'J'
+      - 'M'
+      - 'MG'
+      - 'MHX'
+      - 'MRX'
+      - 'PA'
+      - 'PAN'
+      - 'PAW'
+      - 'PC'
+      - 'PCN'
+      - 'PCO'
+      - 'PD'
+      - 'PG'
+      - 'PH'
+      - 'PI'
+      - 'PJ'
+      - 'PJN'
+      - 'PJW'
+      - 'PM'
+      - 'PMN'
+      - 'PMW'
+      - 'PS'
+      - 'PSF'
+      - 'PU'
+      - 'PVN'
+      - 'PW'
+      - 'SBP'
+      - 'SC'
+      - 'TA'
+      - 'TAN'
+      - 'TC'
+      - 'TD'
+      - 'TJ'
+      - 'TJN'
+      - 'TU'
+      - 'TVN'
+      - 'U'
+    metrics:
+      - sum

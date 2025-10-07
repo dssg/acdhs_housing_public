@@ -1,0 +1,29 @@
+prefix: 'ph_out_days_since'
+from_obj: |
+  (
+    select 
+      client_id as entity_id,
+      moveoutdate_new
+    from pretriage.public_housing_id
+  ) as phout
+
+knowledge_date_column: 'moveoutdate_new'
+
+intervals: ['all']
+
+aggregates_imputation:
+  all:
+    type: 'constant'
+    value: 9999
+
+aggregates:
+  - # days since moveoutdate_new
+    quantity:
+      days_since_phout: ('{collate_date}'::DATE - moveoutdate_new::DATE)
+    metrics:
+      - min 
+  - # log days since moveoutdate_new
+    quantity:
+      days_since_phout_log: log('{collate_date}'::DATE - moveoutdate_new::DATE)
+    metrics:
+      - min 

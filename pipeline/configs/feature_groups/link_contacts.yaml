@@ -1,0 +1,106 @@
+prefix: 'link'
+from_obj: |
+  (
+    select 
+      client_id as entity_id, 
+      contact_type,
+      contact_date,
+      contact_id,
+      how_did_caller_hear_abt_link,
+      REPLACE( REPLACE( REPLACE (how_did_caller_hear_abt_link, '''', ''), '*', ''), ' ','') as src,
+      case 
+      when relationship_to_consumer in ('Self', 'Unknown') then relationship_to_consumer 
+      else 'Other' end as who_called
+    from pretriage.link_contacts_id
+  ) as lc
+
+knowledge_date_column: 'contact_date'
+
+intervals: ['6months', '1year', 'all'] 
+
+aggregates:
+  -
+    quantity: contact_id
+    metrics:
+      - 'count'
+    imputation:
+      all:
+        type: 'zero_noflag'
+
+categoricals_imputation:
+  all:
+    type: 'null_category'
+
+categoricals:
+  - 
+    column: contact_type
+    # choice_query: select distinct contact_type from pretriage.link_contacts_id;
+    choices:
+      - 'Letter'
+      - 'Outreach'
+      - 'Outgoing'
+      - 'Admin'
+      - 'Incoming'
+      - 'Family Navigation'
+      - 'Field'
+      - 'Email'
+      - 'Coordinator'
+      - 'Walk-in'
+
+    metrics:
+      - sum
+  - 
+    column: src
+    # choice_query: select distinct REPLACE( REPLACE( REPLACE (how_did_caller_hear_abt_link, '''', ''), '*', ''), ' ','') as src from pretriage.link_contacts_id;
+    choices:
+      - 'Radio'
+      - 'HousingProvider'
+      - 'OtherNon-CocProvider-HV'
+      - 'Newspaper/PrintedAd-HV'
+      - 'PediatricianorFamilyPhysician'
+      - 'CoCProvider-HV'
+      - 'PediatricianorFamilyPhysician-HV'
+      - '2-1-1UnitedWayHelpline'
+      - 'Church/ReligiousOrganization'
+      - '2-1-1-HV'
+      - 'OtherDHSOffice-HV'
+      - 'Newspaper/PrintedAd'
+      - 'HomelessProviderand/orES'
+      - 'DHSWebsite'
+      - 'Unknown'
+      - 'ResourceGuide'
+      - 'AAA'
+      - 'Website-Other'
+      - 'PalmCard-HomeVisiting'
+      - 'OtherDHSOffice'
+      - 'AlleghenyLinkWebsite-HV'
+      - 'Friend/Family-HV'
+      - 'Website-DHS/AlleghenyLink'
+      - 'VeteransAdministration(VA)'
+      - 'OtherWebsite-HV'
+      - 'Friend/Family/WordofMouth'
+      - 'EarlyInterventionorHVProgram-HV'
+      - 'Other(Text)'
+      - 'OtherProvider'
+      - 'DHSWebsite-HV'
+      - 'OB/GYN,Nurse,HospitalSWer-HV'
+      - 'PalmCard-AlleghenyLink'
+      - 'Police/Courts/JusticeSystem'
+      - 'Pandora-HV'
+      - 'ResourceGuide-HV'
+      - 'HousingProvider-HV'
+      - 'HospitalorOtherMedicalFacility'
+
+    metrics:
+      - sum
+  - 
+    column: who_called
+
+    choices:
+      - 'Self'
+      - 'Other'
+      - 'Uknown'
+
+    metrics:
+      - sum
+

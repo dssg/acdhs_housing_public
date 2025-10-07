@@ -1,0 +1,67 @@
+prefix: 'phys'
+# TODO same client+claim number has multiple svc_cat_grp_nbr, are we counting correctly?
+from_obj: |
+  (
+    select 
+      client_id as entity_id,
+      svc_end_dt_new,
+      lag_ph,
+      svc_start_dt,
+      source,
+      scu_cd
+    from pretriage.cmu_physical_health_prm_id
+  ) as ph
+
+knowledge_date_column: 'svc_start_dt'
+
+intervals: ['all', '6month', '1 year', '3 year']
+
+aggregates_imputation:
+  all:
+    type: 'zero_noflag'
+    # value: -1
+
+aggregates:
+  - # time between ph events
+    quantity: lag_ph
+    metrics:
+      - avg
+      - min
+      - max
+    imputation:
+      all:
+        type: 'constant'
+        value: 9999 # large gap between events when missing
+
+  - # flag 1 if condition is current 
+    quantity: 
+      current_flag: case when '{collate_date}'::DATE < svc_end_dt_new::DATE then 1 else 0 end 
+    metrics:
+      - max
+      
+  - # number of ph events
+    quantity: entity_id # we really want count of all events here
+    metrics:
+      - count
+
+categoricals_imputation:
+  all:
+    type: 'null_category'
+
+categoricals:
+  - 
+    column: source
+    # choice_query: select distinct source from pretriage.cmu_physical_health_prm_id;
+    choices:
+      - 'Outpatient'
+      - 'Inpatient'
+    metrics:
+      - sum
+  - 
+    column: scu_cd
+    # choice_query: select distinct scu_cd from pretriage.cmu_physical_health_prm_id;
+    choices:
+      - 'ER'   
+      - 'Other'
+    metrics:
+      - sum

@@ -1,0 +1,25 @@
+prefix: 'ra_days_since'
+from_obj: |
+  (
+    select 
+      client_id as entity_id, 
+      paymnt_dt
+    from pretriage.rental_assistance_id
+  ) as ra
+
+knowledge_date_column: 'paymnt_dt'
+
+intervals: ['all']
+
+aggregates:
+  -
+    quantity:
+      paymnt: ('{collate_date}'::DATE - paymnt_dt::DATE)
+    metrics:
+      - min
+      - max
+    imputation:
+      all:
+        type: 'constant'
+        value: 9999
+

@@ -1,0 +1,27 @@
+prefix: 'ph_moveout'
+from_obj: |
+  (
+    select 
+      client_id as entity_id,
+      moveoutdate_new,
+      days_in_ph
+    from pretriage.public_housing_id
+  ) as phout
+
+knowledge_date_column: 'moveoutdate_new'
+
+intervals: ['all', '6month', '1 year', '3 year']
+
+aggregates_imputation:
+  all:
+    type: 'zero_noflag'
+    # value: -1
+
+aggregates:
+  - # length of stay in public housing
+    quantity: days_in_ph
+    metrics:
+      - sum
+      - avg
+      - min
+      - max

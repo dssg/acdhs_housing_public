@@ -1,0 +1,59 @@
+prefix: 'cyf'
+from_obj: | 
+  (
+    select distinct on (plcmnt_seq_nbr,  
+      client_id)
+      client_id as entity_id, 
+      plcmnt_entry_date, 
+      plcmnt_end_date, 
+      lag_cyf, 
+      plcmnt_seq_nbr,
+      srvc_group_2 
+    from pretriage.cmu_placement_prm_id
+  ) as cyf
+
+knowledge_date_column: 'plcmnt_entry_date'
+
+intervals: ['all']
+
+aggregates_imputation:
+  all:
+    type: 'zero_noflag'
+    value: -1
+
+aggregates:
+  - # count cyf
+    quantity: plcmnt_seq_nbr
+    metrics:
+      - count
+  - # time between cyf
+    quantity: lag_cyf
+    metrics:
+      - avg
+      - min
+      - max
+    imputation:
+      all:
+        type: constant
+        value: 9999 # assume a large gap between events
+  - # flag 1 if condition is current 
+    quantity: 
+      current_flag: "case when '{collate_date}'::DATE < plcmnt_end_date::DATE then 1 when '{collate_date}'::DATE > plcmnt_end_date::DATE then 0 else null end" 
+    metrics:
+      - max
+
+categoricals_imputation:
+  all:
+    type: 'null_category'
+
+categoricals:
+  - 
+    column: srvc_group_2
+    # choice_query: select distinct srvc_group_2 from pretriage.cmu_placement_prm_id;
+    choices:
+      - 'Independent Living'
+      - 'Congregate Care'
+      - 'Foster Care'
+      - 'Alternate Location'
+    metrics:
+      - sum
