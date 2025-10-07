@@ -1,6 +1,6 @@
 # Reducing Entry Into Homelessness through ML-Informed Rental Assistance
 
-Repository for a project to prioritize individuals currently facing eviction for rental assistance based on their predicted risk of future homelessness. This is an ongoing collaboration between Carnegie Mellon University (CMU) and the Allegheny County Department of Human Services (ACDHS). This work began as a project for the Data Science for Social Good Summer Fellowship 2022 at CMU in Pittsburgh (the final code from the DSSG fellowship is available here [[LINK]]).
+Repository for a project to prioritize individuals currently facing eviction for rental assistance based on their predicted risk of future homelessness. This is an ongoing collaboration between Carnegie Mellon University (CMU) and the Allegheny County Department of Human Services (ACDHS). This work began as a project for the Data Science for Social Good Summer Fellowship 2022 at CMU in Pittsburgh (the final code from the DSSG fellowship is available [here](https://github.com/dssg/acdhs_housing_public/releases/tag/dssg2022)).
 
 ## Data
 
@@ -20,17 +20,17 @@ We define "currently homeless" individuals to be anyone who has interacted with 
 
 ### Outcome Label 
 
-Individuals belong to the class of interest (`label=1`) if they interact with homelessness services at least once within 12 months of the prediction date. The relevant homelessness services include emergency shelters, street outreach programs, transitional housing, and other re-housing programs that are specified in the [homelessness table script](src/pipeline/pretriage/homelessness_table.sql). For each weekly list, we predict the top `k` individuals (`k` is based on intervention capacity) in terms of their risk of interacting with homelessness services within 12 months.
+Individuals belong to the class of interest (`label=1`) if they interact with homelessness services at least once within 12 months of the prediction date. The relevant homelessness services include emergency shelters, street outreach programs, transitional housing, and other re-housing programs. For each weekly list, we predict the top `k` individuals (`k` is based on intervention capacity) in terms of their risk of interacting with homelessness services within 12 months.
 
 ### Alternate formulations
 
-We use the above cohort and label definitions in our experiments, but alternate formulations we have explored are documented in [`pipeline\configs\README.md`](src/pipeline/configs/README.md).
+We use the above cohort and label definitions in our experiments, but alternate formulations we have explored are documented in [`pipeline\configs\README.md`](pipeline/configs/README.md).
 
 ## Methodology
 1. Define cohort based on problem formulation
 2. Define outcome label based on formulation
 4. Define training and validation sets over time 
-5. Define and generate predictors (see [feature config files](src/pipeline/configs/feature_groups/))
+5. Define and generate predictors 
 6. Train Models on each training set and score all individuals in the corresponding validation set
 7. Evaluate all models for each validation time according to each metric (PPV at top k)
 8. Select "Best" model based on results over time
@@ -39,11 +39,11 @@ We use the above cohort and label definitions in our experiments, but alternate 
 
 ## Repository Structure
 
-To build our predictive models, we use [Triage](https://github.com/dssg/triage), an open-sourced ML pipeline tool built and maintained by our team. Triage enables the modeling parameters to be set in a YAML configuration file, and the full configuration is defined in [ this YAML config file](https://github.com/dssg/acdhs_housing/blob/main/src/pipeline/configs/eviction_cohort_homelessness_risk.yaml)[[LINK]].
+To build our predictive models, we use [Triage](https://github.com/dssg/triage), an open-sourced ML pipeline tool built and maintained by our team. Triage enables the modeling parameters to be set in a YAML configuration file, and the full configuration is defined in [ this YAML config file](pipeline/configs/labels/facing_eviction_homelessness.sql).
 
-* [Features](https://github.com/dssg/acdhs_housing/blob/main/src/pipeline/configs/eviction_cohort_homelessness_risk.yaml#L28)[[LINK]]
-* [Models](https://github.com/dssg/acdhs_housing/blob/main/src/pipeline/configs/eviction_cohort_homelessness_risk.yaml#L2292)[[LINK]]
-* [Label and cohort definition](https://github.com/dssg/acdhs_housing/blob/main/src/pipeline/configs/eviction_cohort_homelessness_risk.yaml#L22)[[LINK]] and corresponding [sql script](https://github.com/dssg/acdhs_housing/blob/main/src/pipeline/configs/labels/facing_eviction_homelessness.sql)[[LINK]]
+* [Features](pipeline/configs/feature_groups/)
+* [Models](pipeline/configs/train_models_for_trial.yaml)
+* [Label and cohort definition](pipeline/configs/labels/facing_eviction_homelessness.sql)
 
 ## Triage 
 We are using [Triage](https://github.com/dssg/triage) to build and select models. Some background and tutorials:
@@ -59,7 +59,7 @@ We are using [Triage](https://github.com/dssg/triage) to build and select models
 ### Requirements
 
 - Triage is installed and the data is in a PostgreSQL database
-- Place the experiment config YAML in `src/pipeline/configs` folder
+- Place the experiment config YAML in `pipeline/configs` folder
 - The database credentials and fed through environmental variables. The required environmental variables: 
     - PGUSER (username for the db)
     - PGHOST (database server)
@@ -77,7 +77,7 @@ We are using [Triage](https://github.com/dssg/triage) to build and select models
 
 ### Running the pipeline
 
-The pipeline is executed using the `run.py` script, which takes a config file (filename only, not full path; the file should be located in `src/pipeline/configs`) as a parameter. The following command can be used to execute the pipeline for the specified config. 
+The pipeline is executed using the `run.py` script, which takes a config file (filename only, not full path; the file should be located in `pipeline/configs`) as a parameter. The following command can be used to execute the pipeline for the specified config. 
 
 ```
 python run.py -c <config_filename> -n <number of jobs> 
